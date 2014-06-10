@@ -3,3 +3,4 @@ packages/
 installer.cpio*
 raspbian-ua-netinst-*.zip
 raspbian-ua-netinst-*.img.xz
+*.sublime-workspace
