@@ -4,7 +4,7 @@ KERNEL_VERSION=3.10-3-rpi
 
 mirror=http://archive.raspbian.org/raspbian/
 release=jessie
-packages="busybox-static libc6 cdebootstrap-static e2fslibs e2fsprogs libcomerr2 libblkid1 libuuid1 libgcc1 dosfstools linux-image-${KERNEL_VERSION} raspberrypi-bootloader-nokernel f2fs-tools btrfs-tools zlib1g liblzo2-2"
+packages="busybox-static libc6 cdebootstrap-static raspbian-archive-keyring e2fslibs e2fsprogs gpgv libbz2-1.0 libcomerr2 libblkid1 libuuid1 libgcc1 dosfstools linux-image-${KERNEL_VERSION} raspberrypi-bootloader-nokernel f2fs-tools btrfs-tools zlib1g liblzo2-2"
 packages_found=
 packages_debs=
 
@@ -30,13 +30,46 @@ allfound() {
     return 0
 }
 
+download_package_lists() {
+    baseurl=$mirror/dists/$release/main/binary-armhf/Packages
+    extension=""
+    decompressor=""
+
+    # First test which extension is supported
+    extensions="xz bz2 gz"
+    for i in $extensions
+    do
+        echo -n "Does '${baseurl}.${i}' exists... "
+        wget -q --spider ${baseurl}.${i}
+        if [ $? -eq 0 ] ; then
+            echo "YES"
+	    extension=".${i}"
+	    break
+        else
+            echo "NO"
+        fi
+    done
+
+    # Based on the extension, set the decompressor
+    if [ $extension = ".bz2" ] ; then
+        decompressor="bunzip2 -c "
+    elif [ $extension = ".xz" ] ; then
+        decompressor="xzcat "
+    elif [ $extension = ".gz" ] ; then
+        decompressor="gunzip -c "
+    fi
+
+    echo "Using extension '${extension}' and decompressor '${decompressor}' to download packages..."
+
+    wget -O - $mirror/dists/$release/firmware/binary-armhf/Packages${extension} | ${decompressor} > Packages
+    wget -O - $mirror/dists/$release/main/binary-armhf/Packages${extension} | ${decompressor} >> Packages
+}
+
 rm -rf packages/
 mkdir packages
 cd packages
 
-echo "Downloading package list..."
-wget -O - $mirror/dists/$release/firmware/binary-armhf/Packages.bz2 | bunzip2 -c > Packages
-wget -O - $mirror/dists/$release/main/binary-armhf/Packages.bz2 | bunzip2 -c >> Packages
+download_package_lists
 
 echo "Searching for required packages..."
 while read k v
