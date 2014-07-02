@@ -95,7 +95,9 @@ cp /boot/bootcode.bin \
     /boot/kernel_install.img \
     /boot/start_cd.elf \
     /boot/start.elf \
-    /boot/start_x.elf /bootfs/ || fail
+    /boot/start_x.elf \
+    /boot/interfaces \
+    /boot/wpa_supplicant.conf /bootfs/ || fail
 
 if [ -f /boot/installer-config.txt ]; then
     cp /boot/installer-config.txt /bootfs/installer-config.txt || fail
@@ -153,11 +155,13 @@ fi
 echo "  online_config = $online_config"
 echo
 
-echo -n "Waiting for eth0... "
+echo -n "Waiting for wlan0... "
+
+ifup wlan0
 
 for i in `seq 1 10`; do
 
-    ifconfig eth0 &>/dev/null
+    ifconfig wlan0 &>/dev/null
     if [ $? -eq 0 ]; then
         break
     fi
@@ -173,11 +177,11 @@ for i in `seq 1 10`; do
 done
 
 if [ "$ip_addr" = "dhcp" ]; then
-    echo -n "Configuring eth0 with DHCP... "
+    echo -n "Configuring wlan0 with DHCP... "
 
-    udhcpc -i eth0 &>/dev/null
+    udhcpc -i wlan0 &>/dev/null
     if [ $? -eq 0 ]; then
-        ifconfig eth0 | fgrep addr: | awk '{print $2}' | cut -d: -f2
+        ifconfig wlan0 | fgrep addr: | awk '{print $2}' | cut -d: -f2
     else
         echo "FAILED"
         fail

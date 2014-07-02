@@ -6,7 +6,7 @@ hostname=pi
 domainname=
 rootpw=raspbian
 cdebootstrap_cmdline=
-bootsize=+50M # /boot partition size as given to fdisk
+bootsize=+100M # /boot partition size as given to fdisk
 rootsize=     # / partition size, leave empty to use all free space
 timeserver=time.nist.gov
 ip_addr=dhcp
@@ -21,3 +21,5 @@ rootfstype=ext4
 rootfs_mkfs_options=
 rootfs_install_mount_options='noatime,data=writeback,nobarrier,noinit_itable'
 rootfs_mount_options='errors=remount-ro,noatime'
+
+#----------------------------------------------------------------------------------------------------------
